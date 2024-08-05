@@ -1,4 +1,4 @@
-﻿;@Ahk2Exe-Let Version = 2.0
+﻿;@Ahk2Exe-Let Version = 3.0
 ;@Ahk2Exe-IgnoreBegin
 ;@Ahk2Exe-IgnoreEnd
 ;@Ahk2Exe-SetMainIcon icon.ico
