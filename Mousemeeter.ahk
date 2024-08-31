@@ -14,7 +14,7 @@ SetWorkingDir(A_ScriptDir)
 SendMode "Input"
 #Include "VMR.ahk"
 
-; Global Variables
+;#REGION: Global Variables
 global RunAsAdmin := true
 global TitleMatchMode := 3
 global ResetOnStartup := true
@@ -34,13 +34,9 @@ global default_file := "default.xml"
 global profile1_file := "profile1.xml"
 global profile2_file := "profile2.xml"
 global current_file := default_file
+;#ENDREGION
 
-ProcessExists(name) {
-    ErrorLevel := ProcessExist(name)
-    return ErrorLevel
-}
-
-; VM-Functions
+;#REGION: VM-Functions
 volumeUp(s) {
     global vm
 
@@ -69,15 +65,14 @@ restart() {
 }
 
 load(file) {
-    global vm
+    global vm, current_file
 
     vm.command.load(A_ScriptDir . "\" . file)
+    current_file := file
 }
+;#ENDREGION
 
-While (!ProcessExists("voicemeeter8.exe") && !ProcessExists("voicemeeter8x64.exe"))
-    Sleep(1000)
-Sleep(5000)
-
+;#REGION: Tray-Menu
 Tray := A_TrayMenu
 Tray.Delete() 
 Tray.Add("Reload", ReloadHandler)
@@ -87,7 +82,10 @@ Tray.Add("Open Config", OpenConfigHandler)
 Tray.Add("")
 Tray.Add("Exit", ExitHandler)
 
-Start()
+ProcessExists(name) {
+    ErrorLevel := ProcessExist(name)
+    return ErrorLevel
+}
 
 ReloadHandler(A_ThisMenuItem, A_ThisMenuItemPos, MyMenu)
 { 
@@ -116,83 +114,9 @@ ExitHandler(A_ThisMenuItem, A_ThisMenuItemPos, MyMenu)
     ExitApp()
     return
 } 
+;#ENDREGION
 
-Start() {
-    global vm
-
-    vm.Login()
-    If (FileExist("config.ini"))
-        ReadConfigIni()
-
-    if (!A_IsAdmin && RunAsAdmin) {
-        Try {
-            Run("*RunAs `"" A_ScriptFullPath "`"")
-        } catch {
-            MsgBox("Declined Elevation, if you want to start this up without Admin Rights, change 'RunAsAdmin' to 0 in config.json")
-            ExitApp()
-        }
-    }
-
-    SetTitleMatchMode(TitleMatchMode)
-
-    If (SetAffinity)
-        ProcessSetPriority("High")
-
-    If (SetCracklingFix)
-        Run("powershell `"$Process = Get-Process audiodg; $Process.ProcessorAffinity=1; $Process.PriorityClass=`"`"High`"`"`"", , "Hide")
-
-    If (ResetOnStartup)
-        load(default_file)
-
-    MainLoop()
-}
-
-MainLoop() {
-    global isActivated, DeactivateOnWindow
-
-    If (DeactivateOnWindow) {
-        Loop
-        {
-            Loop Parse, DeactivateOnWindow, "`n", "`r"
-            {
-                if WinActive(A_LoopField) {
-                    isActivated := false
-                    WinWaitNotActive(A_LoopField)
-                    isActivated := true
-                }
-                Sleep(300)
-            }
-            Sleep(500)
-        }
-    }
-}
-
-ReadConfigIni() {
-    global RunAsAdmin, TitleMatchMode, ResetOnStartup, SetAffinity, SetCracklingFix, OUTPUT_1, OUTPUT_2, OUTPUT_3, VOLUME_CHANGE_AMOUNT, default_file, profile1_file, profile2_file, DeactivateOnWindow
-    SettingSectionExist := IniRead("config.ini", "Settings")
-    If (SettingSectionExist) {
-        RunAsAdmin := IniRead("config.ini", "Settings", "RunAsAdmin")
-        TitleMatchMode := IniRead("config.ini", "Settings", "TitleMatchMode")
-        ResetOnStartup := IniRead("config.ini", "Settings", "ResetOnStartup")
-        SetAffinity := IniRead("config.ini", "Settings", "SetAffinity")
-        SetCracklingFix := IniRead("config.ini", "Settings", "SetCracklingFix")
-    }
-
-    VoicemeeterSectionExist := IniRead("config.ini", "VoicemeeterSettings")
-    If (VoicemeeterSectionExist) {
-        OUTPUT_1 := IniRead("config.ini", "VoicemeeterSettings", "OUTPUT_1")
-        OUTPUT_2 := IniRead("config.ini", "VoicemeeterSettings", "OUTPUT_2")
-        OUTPUT_3 := IniRead("config.ini", "VoicemeeterSettings", "OUTPUT_3")
-        VOLUME_CHANGE_AMOUNT := IniRead("config.ini", "VoicemeeterSettings", "VOLUME_CHANGE_AMOUNT")
-        default_file := IniRead("config.ini", "VoicemeeterSettings", "default_file")
-        profile1_file := IniRead("config.ini", "VoicemeeterSettings", "profile1_file")
-        profile2_file := IniRead("config.ini", "VoicemeeterSettings", "profile2_file")
-    }
-
-    DeactivateOnWindow := IniRead("config.ini", "DeactivateOnWindow")
-}
-
-;Mouse-HOTKEYS
+;#REGION: Mouse-HOTKEYS
 #HotIf isActivated
 XButton1::
 { 
@@ -238,9 +162,9 @@ XButton2 Up::
 LButton::
 { 
     If (GetKeyState("XButton1", "P") && GetKeyState("XButton2", "P"))
-        Send("{LButton}")
+        Send("{LButton}") ; TODO: Can add custom function here
     Else If (GetKeyState("XButton1", "P"))
-        Send("{LButton}")
+        Send("{LButton}") ; TODO: Can add custom function here
     Else If (GetKeyState("XButton2", "P"))
         Send("{Media_Prev}")
     return
@@ -249,9 +173,9 @@ LButton::
 RButton::
 { 
     If (GetKeyState("XButton1", "P") && GetKeyState("XButton2", "P"))
-        Send("{RButton}")
+        Send("{RButton}") ; TODO: Can add custom function here
     Else If (GetKeyState("XButton1", "P"))
-        Send("{RButton}")
+        Send("{RButton}") ; TODO: Can add custom function here
     Else If (GetKeyState("XButton2", "P"))
         Send("{Media_Next}")
     return
@@ -260,9 +184,9 @@ RButton::
 MButton::
 {  
     If (GetKeyState("XButton1", "P") && GetKeyState("XButton2", "P"))
-        Send("{MButton}")
+        Send("{MButton}") ; TODO: Can add custom function here
     Else If (GetKeyState("XButton1", "P"))
-        Send("{MButton}")
+        Send("{MButton}") ; TODO: Can add custom function here
     Else If (GetKeyState("XButton2", "P"))
         Send("{Media_Play_Pause}")
     return
@@ -294,11 +218,13 @@ WheelDown::
     return
 } 
 #HotIf
+;#ENDREGION
 
-; Keyboard-HOTKEYS
-PrintScreen::
-{ 
-    global current_file, default_file, profile1_file, profile2_file, OUTPUT_1, OUTPUT_2, OUTPUT_3
+;#REGION: Keyboard-HOTKEYS
+PgUp & PgDn::
+F24::
+{
+    global default_file, profile1_file, profile2_file, OUTPUT_1, OUTPUT_2, OUTPUT_3
 
     If (GetKeyState("XButton1", "P") && GetKeyState("XButton2", "P")) ;VAIO3
         volumeMute(OUTPUT_3)
@@ -312,57 +238,59 @@ PrintScreen::
         If (Errorlevel) {
             if (current_file == profile1_file) {
                 load(default_file)
-                current_file := default_file
             }
             Else {
                 load(profile1_file)
-                current_file := profile1_file
             }
         }
         Else {
             if (current_file == profile2_file) {
                 load(default_file)
-                current_file := default_file
             }
             Else {
                 load(profile2_file)
-                current_file := profile2_file
             }
         }
     }
     return
 }
 
+Volume_Up::
 ^PgUp::
 {
     global OUTPUT_1
     volumeUp(OUTPUT_1)
 }
 
+Volume_Down::
 ^PgDn::
 {
     global OUTPUT_1
     volumeDown(OUTPUT_1)
 }
 
++Volume_Up::
 +PgUp::
 {
     global OUTPUT_2
     volumeUp(OUTPUT_2)
 }
 
++Volume_Down::
 +PgDn::
 {
     global OUTPUT_2
     volumeDown(OUTPUT_2)
 }
 
+^+Volume_Up::
 ^+PgUp::
 {
     global OUTPUT_3
     volumeUp(OUTPUT_3)
 }
 
+^+Volume_Down::
 ^+PgDn::
 {
     global OUTPUT_3
@@ -378,7 +306,7 @@ PrintScreen::
 
 ^+R::
 { 
-    global default_file, current_file
+    global default_file
     ErrorLevel := !KeyWait("R")
     ErrorLevel := !KeyWait("R", "d t0.250")
     If (Errorlevel) {
@@ -386,7 +314,89 @@ PrintScreen::
     }
     Else {
         load(default_file)
-        current_file := default_file
     }
     return
 } 
+;#ENDREGION
+
+Start() {
+    global vm
+
+    vm.Login()
+
+    If (FileExist("config.ini"))
+        ReadConfigIni()
+
+    if (!A_IsAdmin && RunAsAdmin) {
+        Try {
+            Run("*RunAs `"" A_ScriptFullPath "`"")
+        } catch {
+            MsgBox("Declined Elevation, if you want to start this up without Admin Rights, change 'RunAsAdmin' to 0 in config.json")
+            ExitApp()
+        }
+    }
+
+    SetTitleMatchMode(TitleMatchMode)
+
+    If (SetAffinity)
+        ProcessSetPriority("High")
+
+    If (SetCracklingFix)
+        Run("powershell `"$Process = Get-Process audiodg; $Process.ProcessorAffinity=1; $Process.PriorityClass=`"`"High`"`"`"", , "Hide")
+
+    If (ResetOnStartup)
+        load(default_file)
+
+    MainLoop()
+}
+
+ReadConfigIni() {
+    global RunAsAdmin, TitleMatchMode, ResetOnStartup, SetAffinity, SetCracklingFix, OUTPUT_1, OUTPUT_2, OUTPUT_3, VOLUME_CHANGE_AMOUNT, default_file, profile1_file, profile2_file, DeactivateOnWindow
+    SettingSectionExist := IniRead("config.ini", "Settings")
+    If (SettingSectionExist) {
+        RunAsAdmin := IniRead("config.ini", "Settings", "RunAsAdmin")
+        TitleMatchMode := IniRead("config.ini", "Settings", "TitleMatchMode")
+        ResetOnStartup := IniRead("config.ini", "Settings", "ResetOnStartup")
+        SetAffinity := IniRead("config.ini", "Settings", "SetAffinity")
+        SetCracklingFix := IniRead("config.ini", "Settings", "SetCracklingFix")
+    }
+
+    VoicemeeterSectionExist := IniRead("config.ini", "VoicemeeterSettings")
+    If (VoicemeeterSectionExist) {
+        OUTPUT_1 := IniRead("config.ini", "VoicemeeterSettings", "OUTPUT_1")
+        OUTPUT_2 := IniRead("config.ini", "VoicemeeterSettings", "OUTPUT_2")
+        OUTPUT_3 := IniRead("config.ini", "VoicemeeterSettings", "OUTPUT_3")
+        VOLUME_CHANGE_AMOUNT := IniRead("config.ini", "VoicemeeterSettings", "VOLUME_CHANGE_AMOUNT")
+        default_file := IniRead("config.ini", "VoicemeeterSettings", "default_file")
+        profile1_file := IniRead("config.ini", "VoicemeeterSettings", "profile1_file")
+        profile2_file := IniRead("config.ini", "VoicemeeterSettings", "profile2_file")
+    }
+
+    DeactivateOnWindow := IniRead("config.ini", "DeactivateOnWindow")
+}
+
+MainLoop() {
+    global isActivated, DeactivateOnWindow
+
+    If (DeactivateOnWindow) {
+        Loop
+        {
+            Loop Parse, DeactivateOnWindow, "`n", "`r"
+            {
+                if WinActive(A_LoopField) {
+                    isActivated := false
+                    WinWaitNotActive(A_LoopField)
+                    isActivated := true
+                }
+                Sleep(300)
+            }
+            Sleep(500)
+        }
+    }
+}
+
+While (!ProcessExists("voicemeeter8.exe") && !ProcessExists("voicemeeter8x64.exe"))
+    Sleep(1000)
+Sleep(5000)
+
+Start()
