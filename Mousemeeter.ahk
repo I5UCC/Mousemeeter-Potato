@@ -390,7 +390,7 @@ MainLoop() {
                 }
                 Sleep(300)
             }
-            Sleep(500)
+            Sleep(1000)
         }
     }
 }
